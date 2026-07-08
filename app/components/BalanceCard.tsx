@@ -1,24 +1,29 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useFinanceStore } from "@/store/financeStore";
 
 export default function BalanceCard() {
-  const receitas = useFinanceStore((state) => state.receitas);
-  const despesas = useFinanceStore((state) => state.despesas);
+  const [mounted, setMounted] = useState(false);
 
-  const totalReceitas = receitas.reduce((acc, item) => acc + item.valor, 0);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  const totalDespesas = despesas.reduce((acc, item) => acc + item.valor, 0);
+  const income = useFinanceStore((state) => state.totalIncome());
+  const expense = useFinanceStore((state) => state.totalExpense());
 
-  const saldo = totalReceitas - totalDespesas;
+  if (!mounted) {
+    return (
+      <div className="relative overflow-hidden rounded-[36px] bg-gradient-to-r from-indigo-700 via-violet-700 to-cyan-600 p-10 h-[280px]" />
+    );
+  }
 
-  const dizimo = totalReceitas * 0.1;
+  const saldo = income - expense;
 
-  const reserva = totalReceitas * 0.2;
-
-  const lazer = totalReceitas * 0.05;
-
-  const livre = saldo - dizimo - reserva - lazer;
+  const dizimo = income * 0.1;
+  const reserva = income * 0.2;
+  const livre = saldo - dizimo - reserva;
 
   const dinheiro = (valor: number) =>
     valor.toLocaleString("pt-BR", {
@@ -42,51 +47,31 @@ export default function BalanceCard() {
       <div className="grid grid-cols-4 gap-8 mt-10">
 
         <div>
-
-          <p className="text-white/60">
-            Receitas
-          </p>
-
+          <p className="text-white/60">Receitas</p>
           <h2 className="text-2xl font-bold mt-1">
-            {dinheiro(totalReceitas)}
+            {dinheiro(income)}
           </h2>
-
         </div>
 
         <div>
-
-          <p className="text-white/60">
-            Despesas
-          </p>
-
+          <p className="text-white/60">Despesas</p>
           <h2 className="text-2xl font-bold mt-1">
-            {dinheiro(totalDespesas)}
+            {dinheiro(expense)}
           </h2>
-
         </div>
 
         <div>
-
-          <p className="text-white/60">
-            Dízimo
-          </p>
-
+          <p className="text-white/60">Dízimo</p>
           <h2 className="text-2xl font-bold mt-1">
             {dinheiro(dizimo)}
           </h2>
-
         </div>
 
         <div>
-
-          <p className="text-white/60">
-            Livre
-          </p>
-
+          <p className="text-white/60">Livre</p>
           <h2 className="text-2xl font-bold text-green-300 mt-1">
             {dinheiro(livre)}
           </h2>
-
         </div>
 
       </div>

@@ -12,55 +12,36 @@ import {
 
 import { useFinanceStore } from "@/store/financeStore";
 
-export default function ChartPlaceholder() {
+export default function FinanceChart() {
   const transactions = useFinanceStore(
     (state) => state.transactions
   );
 
-  const months = [
-    "Jan",
-    "Fev",
-    "Mar",
-    "Abr",
-    "Mai",
-    "Jun",
-    "Jul",
-    "Ago",
-    "Set",
-    "Out",
-    "Nov",
-    "Dez",
-  ];
+  const grouped = transactions.reduce((acc, item) => {
+    const key = item.date;
 
-  const data = months.map((month, index) => {
-    const income = transactions
-      .filter((t) => {
-        const date = new Date(t.date);
+    if (!acc[key]) {
+      acc[key] = {
+        date: key,
+        income: 0,
+        expense: 0,
+      };
+    }
 
-        return (
-          t.type === "income" &&
-          date.getMonth() === index
-        );
-      })
-      .reduce((acc, item) => acc + item.value, 0);
+    if (item.type === "income") {
+      acc[key].income += item.value;
+    } else {
+      acc[key].expense += item.value;
+    }
 
-    const expense = transactions
-      .filter((t) => {
-        const date = new Date(t.date);
+    return acc;
+  }, {} as Record<string, any>);
 
-        return (
-          t.type === "expense" &&
-          date.getMonth() === index
-        );
-      })
-      .reduce((acc, item) => acc + item.value, 0);
-
-    return {
-      month,
-      Receitas: income,
-      Despesas: expense,
-    };
-  });
+  const data = Object.values(grouped).sort(
+    (a: any, b: any) =>
+      new Date(a.date).getTime() -
+      new Date(b.date).getTime()
+  );
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
@@ -71,13 +52,13 @@ export default function ChartPlaceholder() {
           Fluxo Financeiro
         </h2>
 
-        <p className="text-zinc-400 mt-1">
+        <p className="text-zinc-400">
           Receitas x Despesas
         </p>
 
       </div>
 
-      <div className="h-[340px]">
+      <div className="h-[350px]">
 
         <ResponsiveContainer width="100%" height="100%">
 
@@ -95,8 +76,9 @@ export default function ChartPlaceholder() {
                 <stop
                   offset="5%"
                   stopColor="#22c55e"
-                  stopOpacity={0.5}
+                  stopOpacity={0.6}
                 />
+
                 <stop
                   offset="95%"
                   stopColor="#22c55e"
@@ -114,8 +96,9 @@ export default function ChartPlaceholder() {
                 <stop
                   offset="5%"
                   stopColor="#ef4444"
-                  stopOpacity={0.5}
+                  stopOpacity={0.6}
                 />
+
                 <stop
                   offset="95%"
                   stopColor="#ef4444"
@@ -126,11 +109,11 @@ export default function ChartPlaceholder() {
             </defs>
 
             <CartesianGrid
-              strokeDasharray="3 3"
               stroke="#333"
+              strokeDasharray="3 3"
             />
 
-            <XAxis dataKey="month" />
+            <XAxis dataKey="date" />
 
             <YAxis />
 
@@ -138,18 +121,16 @@ export default function ChartPlaceholder() {
 
             <Area
               type="monotone"
-              dataKey="Receitas"
+              dataKey="income"
               stroke="#22c55e"
               fill="url(#income)"
-              strokeWidth={3}
             />
 
             <Area
               type="monotone"
-              dataKey="Despesas"
+              dataKey="expense"
               stroke="#ef4444"
               fill="url(#expense)"
-              strokeWidth={3}
             />
 
           </AreaChart>

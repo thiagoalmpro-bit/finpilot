@@ -1,104 +1,141 @@
-"use client";
-
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-export interface Receita {
-  id: number;
-  descricao: string;
-  valor: number;
-  data: string;
+export interface Account {
+  id: string;
+  name: string;
+  balance: number;
+  icon: string;
 }
 
-export interface Despesa {
-  id: number;
-  descricao: string;
-  valor: number;
-  vencimento: string;
-  categoria: string;
-  parcelado: boolean;
-  parcelaAtual?: number;
-  totalParcelas?: number;
+export interface Transaction {
+  id: string;
+  type: "income" | "expense";
+  description: string;
+  value: number;
+  date: string;
+  category?: string;
+  accountId: string;
 }
 
 interface FinanceStore {
-  receitas: Receita[];
-  despesas: Despesa[];
+  accounts: Account[];
 
-  adicionarReceita: (receita: Receita) => void;
-  adicionarDespesa: (despesa: Despesa) => void;
+  transactions: Transaction[];
 
-  removerReceita: (id: number) => void;
-  removerDespesa: (id: number) => void;
+  addAccount: (account: Account) => void;
+
+  addTransaction: (transaction: Transaction) => void;
+
+  removeTransaction: (id: string) => void;
+
+  totalIncome: () => number;
+
+  totalExpense: () => number;
+
+  balance: () => number;
 }
 
-export const useFinanceStore = create<FinanceStore>((set) => ({
-  receitas: [
-    {
-      id: 1,
-      descricao: "Pagamento dia 15",
-      valor: 1110,
-      data: "15/07",
-    },
-    {
-      id: 2,
-      descricao: "Pagamento dia 25",
-      valor: 750,
-      data: "25/07",
-    },
-    {
-      id: 3,
-      descricao: "Pagamento dia 30",
-      valor: 950,
-      data: "30/07",
-    },
-  ],
+export const useFinanceStore = create<FinanceStore>()(
+  persist(
+    (set, get) => ({
 
-  despesas: [
+      accounts: [
+
+        {
+          id: "wallet",
+          name: "Carteira",
+          balance: 0,
+          icon: "wallet",
+        },
+
+        {
+          id: "inter",
+          name: "Inter",
+          balance: 0,
+          icon: "inter",
+        },
+
+        {
+          id: "nubank",
+          name: "Nubank",
+          balance: 0,
+          icon: "nubank",
+        },
+
+        {
+          id: "caixa",
+          name: "Caixa",
+          balance: 0,
+          icon: "caixa",
+        },
+
+      ],
+
+      transactions: [],
+
+      addAccount: (account) =>
+        set((state) => ({
+          accounts: [...state.accounts, account],
+        })),
+
+      addTransaction: (transaction) =>
+        set((state) => {
+
+          const accounts = state.accounts.map((account) => {
+
+            if (account.id !== transaction.accountId) {
+              return account;
+            }
+
+            return {
+              ...account,
+              balance:
+                transaction.type === "income"
+                  ? account.balance + transaction.value
+                  : account.balance - transaction.value,
+            };
+          });
+
+          return {
+            transactions: [
+              ...state.transactions,
+              transaction,
+            ],
+            accounts,
+          };
+        }),
+
+      removeTransaction: (id) =>
+        set((state) => ({
+
+          transactions: state.transactions.filter(
+            (item) => item.id !== id
+          ),
+
+        })),
+
+      totalIncome: () =>
+        get()
+          .transactions
+          .filter((t) => t.type === "income")
+          .reduce((acc, item) => acc + item.value, 0),
+
+      totalExpense: () =>
+        get()
+          .transactions
+          .filter((t) => t.type === "expense")
+          .reduce((acc, item) => acc + item.value, 0),
+
+      balance: () =>
+        get().accounts.reduce(
+          (acc, item) => acc + item.balance,
+          0
+        ),
+
+    }),
     {
-      id: 1,
-      descricao: "Escola",
-      valor: 300,
-      vencimento: "08",
-      categoria: "Educação",
-      parcelado: false,
-    },
-    {
-      id: 2,
-      descricao: "Moto",
-      valor: 339,
-      vencimento: "22",
-      categoria: "Financiamento",
-      parcelado: false,
-    },
-    {
-      id: 3,
-      descricao: "TV Samsung",
-      valor: 230,
-      vencimento: "25",
-      categoria: "Eletrônicos",
-      parcelado: true,
-      parcelaAtual: 4,
-      totalParcelas: 10,
-    },
-  ],
-
-  adicionarReceita: (receita) =>
-    set((state) => ({
-      receitas: [...state.receitas, receita],
-    })),
-
-  adicionarDespesa: (despesa) =>
-    set((state) => ({
-      despesas: [...state.despesas, despesa],
-    })),
-
-  removerReceita: (id) =>
-    set((state) => ({
-      receitas: state.receitas.filter((r) => r.id !== id),
-    })),
-
-  removerDespesa: (id) =>
-    set((state) => ({
-      despesas: state.despesas.filter((d) => d.id !== id),
-    })),
-}));
+      name: "finpilot-storage",
+    }
+  )
+);

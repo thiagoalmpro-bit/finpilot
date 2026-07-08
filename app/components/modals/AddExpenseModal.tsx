@@ -8,7 +8,7 @@ interface Props {
   onClose: () => void;
 }
 
-export default function AddIncomeModal({
+export default function AddExpenseModal({
   open,
   onClose,
 }: Props) {
@@ -21,6 +21,7 @@ export default function AddIncomeModal({
   );
 
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("Alimentação");
   const [value, setValue] = useState("");
   const [date, setDate] = useState("");
 
@@ -31,18 +32,26 @@ export default function AddIncomeModal({
   if (!open) return null;
 
   function salvar() {
-    if (!description || !value || !date || !accountId) return;
+    if (
+      !description ||
+      !value ||
+      !date ||
+      !accountId
+    )
+      return;
 
     addTransaction({
       id: Date.now().toString(),
-      type: "income",
+      type: "expense",
       description,
+      category,
       value: Number(value),
       date,
       accountId,
     });
 
     setDescription("");
+    setCategory("Alimentação");
     setValue("");
     setDate("");
     setAccountId(accounts[0]?.id ?? "");
@@ -56,7 +65,7 @@ export default function AddIncomeModal({
       <div className="w-[520px] rounded-3xl border border-white/10 bg-[#111827] p-8">
 
         <h2 className="mb-8 text-3xl font-bold">
-          Nova Receita
+          Nova Despesa
         </h2>
 
         <div className="space-y-5">
@@ -65,22 +74,37 @@ export default function AddIncomeModal({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Descrição"
-            className="w-full rounded-xl border border-white/10 bg-white/5 p-4 outline-none focus:border-cyan-500"
+            className="w-full rounded-xl border border-white/10 bg-white/5 p-4 outline-none focus:border-red-500"
           />
+
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full rounded-xl border border-white/10 bg-white/5 p-4 outline-none"
+          >
+            <option>Alimentação</option>
+            <option>Transporte</option>
+            <option>Moradia</option>
+            <option>Educação</option>
+            <option>Saúde</option>
+            <option>Igreja</option>
+            <option>Lazer</option>
+            <option>Outros</option>
+          </select>
 
           <input
             value={value}
             onChange={(e) => setValue(e.target.value)}
             type="number"
             placeholder="Valor"
-            className="w-full rounded-xl border border-white/10 bg-white/5 p-4 outline-none focus:border-cyan-500"
+            className="w-full rounded-xl border border-white/10 bg-white/5 p-4 outline-none focus:border-red-500"
           />
 
           <input
             value={date}
             onChange={(e) => setDate(e.target.value)}
             type="date"
-            className="w-full rounded-xl border border-white/10 bg-white/5 p-4 outline-none focus:border-cyan-500"
+            className="w-full rounded-xl border border-white/10 bg-white/5 p-4 outline-none focus:border-red-500"
           />
 
           <select
@@ -111,7 +135,7 @@ export default function AddIncomeModal({
 
           <button
             onClick={salvar}
-            className="rounded-xl bg-green-600 px-6 py-3 hover:bg-green-500"
+            className="rounded-xl bg-red-600 px-6 py-3 hover:bg-red-500"
           >
             Salvar
           </button>
