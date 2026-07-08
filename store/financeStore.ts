@@ -4,23 +4,22 @@ import { persist } from "zustand/middleware";
 export interface Account {
   id: string;
   name: string;
+  bank: string;
   balance: number;
-  icon: string;
+  color: string;
 }
 
 export interface Transaction {
   id: string;
+  accountId: string;
   type: "income" | "expense";
   description: string;
   value: number;
   date: string;
-  category?: string;
-  accountId: string;
 }
 
 interface FinanceStore {
   accounts: Account[];
-
   transactions: Transaction[];
 
   addAccount: (account: Account) => void;
@@ -41,35 +40,13 @@ export const useFinanceStore = create<FinanceStore>()(
     (set, get) => ({
 
       accounts: [
-
-        {
-          id: "wallet",
-          name: "Carteira",
-          balance: 0,
-          icon: "wallet",
-        },
-
         {
           id: "inter",
-          name: "Inter",
+          name: "Conta Principal",
+          bank: "Inter",
           balance: 0,
-          icon: "inter",
+          color: "#F97316",
         },
-
-        {
-          id: "nubank",
-          name: "Nubank",
-          balance: 0,
-          icon: "nubank",
-        },
-
-        {
-          id: "caixa",
-          name: "Caixa",
-          balance: 0,
-          icon: "caixa",
-        },
-
       ],
 
       transactions: [],
@@ -84,9 +61,8 @@ export const useFinanceStore = create<FinanceStore>()(
 
           const accounts = state.accounts.map((account) => {
 
-            if (account.id !== transaction.accountId) {
+            if (account.id !== transaction.accountId)
               return account;
-            }
 
             return {
               ...account,
@@ -95,24 +71,21 @@ export const useFinanceStore = create<FinanceStore>()(
                   ? account.balance + transaction.value
                   : account.balance - transaction.value,
             };
+
           });
 
           return {
-            transactions: [
-              ...state.transactions,
-              transaction,
-            ],
             accounts,
+            transactions: [...state.transactions, transaction],
           };
+
         }),
 
       removeTransaction: (id) =>
         set((state) => ({
-
           transactions: state.transactions.filter(
             (item) => item.id !== id
           ),
-
         })),
 
       totalIncome: () =>
@@ -129,7 +102,7 @@ export const useFinanceStore = create<FinanceStore>()(
 
       balance: () =>
         get().accounts.reduce(
-          (acc, item) => acc + item.balance,
+          (total, account) => total + account.balance,
           0
         ),
 

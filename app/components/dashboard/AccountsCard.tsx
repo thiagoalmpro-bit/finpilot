@@ -1,94 +1,118 @@
 "use client";
 
-import { Wallet, Landmark, CreditCard } from "lucide-react";
+import { useState } from "react";
+import { Landmark, Plus } from "lucide-react";
+
 import { useFinanceStore } from "@/store/financeStore";
+import AddAccountModal from "../modals/AddAccountModal";
+
+const dinheiro = (valor: number) =>
+  valor.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 
 export default function AccountsCard() {
   const accounts = useFinanceStore(
     (state) => state.accounts
   );
 
-  const money = (value: number) =>
-    value.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-
-  function getIcon(icon: string) {
-    switch (icon) {
-      case "wallet":
-        return <Wallet size={24} />;
-
-      case "inter":
-        return <Landmark size={24} />;
-
-      case "nubank":
-        return <CreditCard size={24} />;
-
-      case "caixa":
-        return <Landmark size={24} />;
-
-      default:
-        return <Wallet size={24} />;
-    }
-  }
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
+    <>
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
 
-      <div className="flex items-center justify-between mb-8">
+        <div className="mb-8 flex items-center justify-between">
 
-        <h2 className="text-2xl font-bold">
-          Minhas Contas
-        </h2>
+          <div>
 
-        <span className="text-zinc-400">
-          {accounts.length} contas
-        </span>
+            <h2 className="text-2xl font-bold">
+              Contas Bancárias
+            </h2>
 
-      </div>
+            <p className="text-zinc-400">
+              Saldo por instituição
+            </p>
 
-      <div className="space-y-4">
+          </div>
 
-        {accounts.map((account) => (
-
-          <div
-            key={account.id}
-            className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 transition"
+          <button
+            onClick={() => setOpen(true)}
+            className="flex items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2 text-sm font-semibold transition hover:bg-cyan-500"
           >
+            <Plus size={18} />
+            Nova Conta
+          </button>
 
-            <div className="flex items-center gap-4">
+        </div>
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-400">
+        <div className="space-y-4">
 
-                {getIcon(account.icon)}
+          {accounts.map((account) => (
+
+            <div
+              key={account.id}
+              className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-5 transition hover:bg-white/10"
+            >
+
+              <div className="flex items-center gap-4">
+
+                <div
+                  className="flex h-14 w-14 items-center justify-center rounded-2xl"
+                  style={{
+                    backgroundColor: `${account.color}25`,
+                  }}
+                >
+                  <Landmark
+                    size={26}
+                    color={account.color}
+                  />
+                </div>
+
+                <div>
+
+                  <h3 className="text-lg font-bold">
+                    {account.bank}
+                  </h3>
+
+                  <p className="text-zinc-400">
+                    {account.name}
+                  </p>
+
+                </div>
 
               </div>
 
-              <div>
-
-                <h3 className="font-semibold">
-                  {account.name}
-                </h3>
+              <div className="text-right">
 
                 <p className="text-sm text-zinc-400">
-                  Conta financeira
+                  Saldo
                 </p>
+
+                <h2
+                  className="text-2xl font-bold"
+                  style={{
+                    color: account.color,
+                  }}
+                >
+                  {dinheiro(account.balance)}
+                </h2>
 
               </div>
 
             </div>
 
-            <span className="text-xl font-bold text-green-400">
-              {money(account.balance)}
-            </span>
+          ))}
 
-          </div>
-
-        ))}
+        </div>
 
       </div>
 
-    </div>
+      <AddAccountModal
+        open={open}
+        onClose={() => setOpen(false)}
+      />
+    </>
   );
 }

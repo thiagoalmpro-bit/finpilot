@@ -24,28 +24,32 @@ export default function AddIncomeModal({
   const [value, setValue] = useState("");
   const [date, setDate] = useState("");
 
-  const [accountId, setAccountId] = useState(
-    accounts[0]?.id ?? ""
-  );
+  const [accountId, setAccountId] = useState("inter");
 
   if (!open) return null;
 
   function salvar() {
-    if (!description || !value || !date || !accountId) return;
+    if (
+      !description ||
+      !value ||
+      !date ||
+      !accountId
+    )
+      return;
 
     addTransaction({
       id: Date.now().toString(),
+      accountId,
       type: "income",
       description,
       value: Number(value),
       date,
-      accountId,
     });
 
     setDescription("");
     setValue("");
     setDate("");
-    setAccountId(accounts[0]?.id ?? "");
+    setAccountId("inter");
 
     onClose();
   }
@@ -65,7 +69,7 @@ export default function AddIncomeModal({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Descrição"
-            className="w-full rounded-xl border border-white/10 bg-white/5 p-4 outline-none focus:border-cyan-500"
+            className="w-full rounded-xl border border-white/10 bg-white/5 p-4 outline-none"
           />
 
           <input
@@ -73,14 +77,14 @@ export default function AddIncomeModal({
             onChange={(e) => setValue(e.target.value)}
             type="number"
             placeholder="Valor"
-            className="w-full rounded-xl border border-white/10 bg-white/5 p-4 outline-none focus:border-cyan-500"
+            className="w-full rounded-xl border border-white/10 bg-white/5 p-4 outline-none"
           />
 
           <input
             value={date}
             onChange={(e) => setDate(e.target.value)}
             type="date"
-            className="w-full rounded-xl border border-white/10 bg-white/5 p-4 outline-none focus:border-cyan-500"
+            className="w-full rounded-xl border border-white/10 bg-white/5 p-4 outline-none"
           />
 
           <select
@@ -93,7 +97,7 @@ export default function AddIncomeModal({
                 key={account.id}
                 value={account.id}
               >
-                {account.name}
+                {account.bank} • {account.name}
               </option>
             ))}
           </select>
@@ -104,7 +108,7 @@ export default function AddIncomeModal({
 
           <button
             onClick={onClose}
-            className="rounded-xl bg-zinc-700 px-6 py-3 hover:bg-zinc-600"
+            className="rounded-xl bg-zinc-700 px-6 py-3"
           >
             Cancelar
           </button>
@@ -113,7 +117,7 @@ export default function AddIncomeModal({
             onClick={salvar}
             className="rounded-xl bg-green-600 px-6 py-3 hover:bg-green-500"
           >
-            Salvar
+            Salvar Receita
           </button>
 
         </div>
